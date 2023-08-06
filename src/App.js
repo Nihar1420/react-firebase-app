@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { db } from "./firebaseConfig";
-import { collection, getDocs, addDoc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 function App() {
   const [users, setUsers] = useState([]);
   const [userDetails, setUserDetails] = useState({
@@ -18,12 +18,28 @@ function App() {
     })));
   };
 
+  const handleUpdateUser = async (userId, userAge) => {
+    const docNew = doc(userCollectionRef, userId);
+    await updateDoc(docNew, { age: userAge + 1 });
+    setTimeout(() => {
+      getUsers();
+    }, 500);
+  };
+
+  const handleDeleteUser = async (userId) => {
+    const docNew = doc(userCollectionRef, userId);
+    await deleteDoc(docNew);
+    setTimeout(() => {
+      getUsers();
+    }, 500);
+  };
+
   const createUser = async () => {
-    const createdUser = await addDoc(userCollectionRef, { name: userDetails.username, age: userDetails.userage });
+    const createdUser = await addDoc(userCollectionRef, { name: userDetails.username, age: Number(userDetails.userage) });
     console.log(createdUser);
     setTimeout(() => {
       getUsers();
-    }, 1000);
+    }, 500);
   };
 
   useEffect(() => {
@@ -42,6 +58,8 @@ function App() {
             <div key={user.id}>
               <h2>{user.name}</h2>
               <h4>{user.age}</h4>
+              <button onClick={() => handleUpdateUser(user.id, user.age)}>Update user age</button>
+              <button onClick={() => handleDeleteUser(user.id)}>Delete user</button>
             </div>
           )
         })
